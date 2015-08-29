@@ -1,0 +1,19 @@
+{
+  "name": "YOO-support",
+  "scripts": {
+    "install": "bower install && webpack"
+  },
+  "devDependencies": {
+    "gulp": "^3.8.10",
+    "lodash": "^3.7.0",
+    "gulp-less": "^3.0.0",
+    "gulp-rename": "^1.2.0",
+    "gulp-util": "^3.0.4",
+    "gulp-concat": "^2.6.0",
+    "html-loader": "^0.3.0",
+    "json-loader": "^0.5.2",
+    "vue-loader": "^2.1.1",
+    "webpack": "^1.11.0",
+    "vinyl-ftp": "^0.4.4"
+  }
+}
