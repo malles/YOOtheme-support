@@ -20,8 +20,8 @@ exports.install = function (Vue) {
 
     var config = function (key, value) {
         // All Read
-        if (arguments.length === 0) {
-            return allStorage(key);
+        if (key === undefined && value === undefined) {
+            return allStorage();
         }
 
         // Write

@@ -39,6 +39,8 @@ gulp.task('compile', function () {
 gulp.task('concatjs', function () {
     return gulp.src([
         'vendor/assets/uikit/js/uikit.js',
+        'vendor/assets/uikit/js/components/notify.js',
+        'vendor/assets/uikit/js/components/tooltip.js',
         'vendor/assets/uikit/js/components/sticky.js',
         'app/bundle/yoo-support.js'
     ])

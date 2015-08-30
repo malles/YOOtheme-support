@@ -32,16 +32,29 @@
 @button-primary-color:                          @global-contrast-color;
 @button-primary-hover-color:                    @global-contrast-color;
 @button-primary-active-color:                   @global-contrast-color;
+@button-primary-hover-background:               darken(@global-primary-background, 5%);
+@button-primary-active-background:              darken(@global-primary-background, 20%);
 
 @button-success-background:                     @global-success-background;
 @button-success-color:                          @global-contrast-color;
 @button-success-hover-color:                    @global-contrast-color;
 @button-success-active-color:                   @global-contrast-color;
+@button-success-hover-background:               darken(@global-success-background, 5%);
+@button-success-active-background:              darken(@global-success-background, 20%);
 
 @button-danger-background:                      @global-danger-background;
 @button-danger-color:                           @global-contrast-color;
 @button-danger-hover-color:                     @global-contrast-color;
 @button-danger-active-color:                    @global-contrast-color;
+@button-danger-hover-background:               darken(@global-danger-background, 5%);
+@button-danger-active-background:               darken(@global-danger-background, 20%);
+
+@button-warning-background:                      @global-warning-background;
+@button-warning-color:                           @global-contrast-color;
+@button-warning-hover-color:                     @global-contrast-color;
+@button-warning-active-color:                    @global-contrast-color;
+@button-warning-hover-background:               darken(@global-warning-background, 5%);
+@button-warning-active-background: #fa712f;
 
 @button-disabled-background:                    @global-default-hover-background;
 @button-disabled-color:                         @global-muted-color;
@@ -196,5 +209,26 @@
     .uk-button-group .uk-button:hover,
     .uk-button-group .uk-button:active,
     .uk-button-group .uk-button.uk-active { position: relative; }
+
+
+    .uk-button-warning {
+      background-color: @button-warning-background;
+      color: @button-warning-color;
+    }
+
+    /* Hover */
+    .uk-button-warning:hover,
+    .uk-button-warning:focus {
+      background-color: @button-warning-hover-background;
+      color: @button-warning-hover-color;
+    }
+
+    /* Active */
+    .uk-button-warning:active,
+    .uk-button-warning.uk-active {
+      background-color: @button-warning-active-background;
+      color: @button-warning-active-color;
+    }
+
 
 }
