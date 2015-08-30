@@ -1,15 +1,11 @@
 <template>
-
+        <label>{{ label }}:</label>
         <div class="uk-button-group">
-            <button v-attr="class: buttonClass(noTag)"
-                    data-uk-tooltip="{delay:500, pos: 'bottom'}" title="Hide/show {{ noTag.text }}"
-                    v-on="click: toggleTagFilter(noTag)">
-                <i class="uk-icon-{{ noTag.icon }} uk-margin-small-right"></i></button>
             <template v-repeat="tag: tagOptions">
-                <button v-attr="class: buttonClass(tag)"
-                        data-uk-tooltip="{delay:500, pos: 'bottom'}" title="Hide/show {{ tag.value }}"
+                <button v-attr="class: buttonClass(tag), disabled: disabled"
+                        data-uk-tooltip="{delay:500, pos: 'bottom'}" title=" {{ ttipText + ' ' + tag.text }}"
                         v-on="click: toggleTagFilter(tag)">
-                    <i class="uk-icon-{{ tag.icon }} uk-margin-small-right"></i></button>
+                    <i class="uk-icon-{{ tag.icon }}"></i></button>
             </template>
         </div>
 
@@ -21,12 +17,23 @@
 
         data: function () {
             return {
-                noTag: {value: 'notags', text: 'No tags', cls: '', icon: 'tags'}
+                label: '',
+                ttipText: ''
             };
         },
 
-        props: ['selected', 'tagOptions'],
+        props: ['selected', 'tagOptions', 'page'],
 
+        created: function () {
+            this.label =  this.page === 'question' ? 'Toggle' : 'Filter';
+            this.ttipText =  this.page === 'question' ? 'Hide/show' : 'Toggle tag';
+        },
+
+        calculated: {
+            disabled: function () {
+                return ['default', 'question'].indexOf(this.page) === -1;
+            }
+        },
         methods: {
             buttonClass: function (tag) {
                 return 'uk-button uk-button-small uk-button-' + tag.cls + (this.selected.indexOf(tag.value) > -1 ? ' uk-active' : '');
