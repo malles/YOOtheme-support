@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         YOOtheme support
 // @namespace    http://www.bixie.nl/
-// @version      0.1
+// @version      0.2
 // @description  supporthelper
 // @author       Matthijs Alles
+// @match        https://yootheme.com/support*
 // @match        http://yootheme.com/support*
 // @grant        none
 // ==/UserScript==
@@ -19,7 +20,7 @@
                 console.log('Error loading CSS!');
             };
 
-            link.href = 'http://yoo.bixie.nl/support/css/uikit.yoosupport.css';
+            link.href = 'https://www.nlprinters.nl/support/css/uikit.yoosupport.css';
             link.type = 'text/css';
             link.rel = 'stylesheet';
 
@@ -40,8 +41,32 @@
         });
     }
 
-    loadSupport('http://yoo.bixie.nl/support/js/yoo-support.js')
+    loadSupport('https://www.nlprinters.nl/support/js/yoo-support.js')
         .then(function () {
+            console.log('              MM                        \n' +
+                '      ZM. MMMMMMMMM.                    \n' +
+                '      MMMMMMMMMMMMM                     \n' +
+                '      MMMMMMMMMMMMMM                    \n' +
+                '      MMMMMMMMMMMMM                     \n' +
+                '        +MMMMMMMMMM                     \n' +
+                '    MNMIMMMMMMMMMM                      \n' +
+                '    IMMMMMMMMMMMM.                      \n' +
+                '    MMMMMMMMMMM,        .MMMMM          \n' +
+                '    MMMMMMMMMM?      =MMMMMMMMMMM       \n' +
+                '   MMMMMMMMMMM~    MMMMMMMMMMMMMMMM     \n' +
+                '  MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM    \n' +
+                ' =MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM   \n' +
+                ' DMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM  MMM   \n' +
+                ' =MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM   \n' +
+                '  MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM   \n' +
+                '   ~MMMMMMMMMMMMMMMMMMMMMMMMMMMMMMMM    \n' +
+                '     .MMMMMMMMMMMMMM+.    +MMMMMMMM     \n' +
+                '        .MMMMMMMMMO       MMMMMMMM      \n' +
+                '        MMMMMMMMMMO     .MMMMMMMM~      \n' +
+                '       MMMMMMMMMM~   MMMMMMMM.          \n' +
+                '   MMMMMMMM.        MMMMMMMM            \n' +
+                '  MMMMMMMM           DMMM7.             \n' +
+                '  ~MMMM$                                ');
             console.log('Bixie Support loaded!');
         })
         .catch(function () {

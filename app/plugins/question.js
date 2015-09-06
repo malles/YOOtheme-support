@@ -16,6 +16,7 @@ exports.install = function (Vue) {
         this.answers = 0;
         this.votes = 0;
         this.favorite = false;
+        this.pinned = false;
         this.created = '';
         this.lastUpdated = '';
         this.lastSeen = '';
@@ -28,6 +29,7 @@ exports.install = function (Vue) {
         if (!this.selector) {
             this.selector = this.id + ':' + (((new Date(this.created)).getTime()) / 1000);
         }
+
     };
 
     _.extend(Question.prototype, {
@@ -35,20 +37,21 @@ exports.install = function (Vue) {
         loadFromDefault: function (element) {
 
             var self = this;
-            this.title = element.find('h2.title a').text();
-            this.url = element.find('h2.title a').attr('href');
-            this.description = element.find('p.description').text();
-            this.accepted  = element.hasClass('accepted'); //keep id from details
-            this.answers = element.find('.info .top strong').text();
-            this.votes = element.find('.info .bottom strong').text();
+            if (!element.hasClass('ys-init')) {
+                this.title = element.find('h2.title a').text();
+                this.url = element.find('h2.title a').attr('href');
+                this.description = element.find('p.description').text();
+                this.accepted  = element.hasClass('accepted'); //keep id from details
+                this.answers = element.find('.info .top strong').text();
+                this.votes = element.find('.info .bottom strong').text();
 
-            this.yooTags = [];
-            element.find('ul.tags li').each(function () {
-                self.yooTags.push(UIkit.$(this).text());
-            });
-            this.lastActive = element.find('.body time').attr('datetime');
-            this.lastUpdated = (new Date()).toISOString();
-
+                this.yooTags = [];
+                element.find('ul.tags li').each(function () {
+                    self.yooTags.push(UIkit.$(this).text());
+                });
+                this.lastActive = element.find('.body time').attr('datetime');
+                this.lastUpdated = (new Date()).toISOString();
+            }
         },
 
         loadFromQuestion: function (element) {
@@ -56,7 +59,10 @@ exports.install = function (Vue) {
             this.title = element.find('h1.title').text();
             this.url = window.location.pathname;
             this.fulltext = element.find('.content').text();
-            this.user  = element.find('a.user').text();
+            if (this.description === '') {
+                this.description = this.fulltext.substr(0, 200);
+            }
+            this.user  = element.find('a.user').text().replace(' Online', '');
             this.accepted  = questionInfo.answered > 0;
             this.accepted_id  = questionInfo.answered;
             this.answers = (UIkit.$('[data-answer]').length).toString();
@@ -75,7 +81,7 @@ exports.install = function (Vue) {
         },
 
         decorateDefault: function (element, vm) {
-            var self = this, tagOptions = '', tags = '';
+            var self = this, tagOptions = '', tags = '', newMessages = '';
             //create tag dom
             _.forEach(vm.tagOptions, function (tag) {
                 var active = false;
@@ -92,14 +98,20 @@ exports.install = function (Vue) {
             //set info dom
             element.find('.info .bottom').html(
                 (this.favorite ? '<i class="uk-icon-star uk-text-primary uk-icon-justify"></i> |' : '') +
-                    'A: <strong class="' + (this.accepted ? ' uk-text-success' : '') + '">' + (this.answers) + '</strong> | V: <strong>' + (this.votes) + '</strong>'
+                    'A: <strong class="' + (this.accepted ? ' uk-text-success' : '') + '">' +
+                    this.answers + '</strong> | V: <strong>' + this.votes + '</strong>'
             );
             element.find('.info .top').css('overflow', 'visible').html(
-                vm.topTemplate.replace('{{tagOptions}}', tagOptions).replace('{{tags}}', tags).replace('{{user}}', this.user)
+                vm.topTemplate
+                    .replace('{{pinnedClass}}', (this.pinned ? '' : 'uk-icon-hover'))
+                    .replace('{{tagOptions}}', tagOptions)
+                    .replace('{{tags}}', tags)
+                    .replace('{{user}}', this.user)
             );
             //no vue here :(
             element.find('[data-pinquestion]').click(function (e) {
                 e.preventDefault();
+                UIkit.$(this).toggleClass('uk-icon-hover');
                 $yoosupport.pinQuestion(self.id);
             });
             element.find('[data-addtag]').click(function (e) {
@@ -109,6 +121,16 @@ exports.install = function (Vue) {
             if (!element.hasClass('ys-init')) {
                 //external link
                 element.find('h2.title').prepend('<a target="_blank" class="uk-icon-hover uk-text-small uk-icon-external-link uk-margin-small-right" href="' + this.url + '"></a>');
+                //bottom
+                if (this.newMessages()) {
+                    newMessages = '<li><span class="uk-badge uk-badge-warning">' + this.newMessages() + ' new!</span></li>';
+                }
+                element.find('.body').prepend(
+                    vm.bottomTemplate
+                        .replace('{{user}}', (this.user ? '<li><span>' + this.user + '</span></li>' : ''))
+                        .replace('{{newMessages}}', newMessages)
+                        .replace('{{created}}', vm.$questionDateformat(this.created))
+                );
             }
             element.addClass('ys-init');
         },
@@ -122,6 +144,13 @@ exports.install = function (Vue) {
             }
             element.addClass('ys-init');
 
+        },
+
+        newMessages: function () {
+            if (this.lastSeen && this.lastSeenAnswers < this.answers) {
+                return this.answers - this.lastSeenAnswers;
+            }
+            return 0;
         }
 
     });
@@ -146,9 +175,20 @@ exports.install = function (Vue) {
                 break;
             }
             saveQuestion(question, vm);
+        } else {
+            question = new Question(id, JSON.parse(vm.$localstorage('q.' + id) || '{}'));
         }
+        question.pinned = vm.$isPinned(question.id);
         return question;
     }
+
+    Vue.prototype.$questionDateformat = function (date) {
+        if (date) {
+            var d = new Date(date);
+            return d.toLocaleDateString() + ', ' + d.toLocaleTimeString();
+        }
+        return 'No date';
+    };
 
     Vue.prototype.$getQuestion = function (id, element, type) {
         return getQuestion(id, this, element, type);

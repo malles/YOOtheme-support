@@ -3,6 +3,7 @@ var Vue = require('vue'),
 
 Vue.use(require('./plugins/localstorage'));
 Vue.use(require('./plugins/question'));
+Vue.use(require('./plugins/pin'));
 
 jQuery(function ($) {
 
@@ -12,8 +13,10 @@ jQuery(function ($) {
 
     //insert components in dom
     $('body').prepend('<toolbar></toolbar>')
-        //.prepend('<pre>{{ $data.question | json }}</pre>')
+        .prepend('<pinbar></pinbar>')
+        //.prepend('<pre>{{ $data.pins | json }}</pre>')
         .append('<instorage></instorage>');
+
     if (page === 'question') {
         $('[data-question] .info').append('<question-tags question="{{@ question }}"></question-tags>');
     }
@@ -24,6 +27,7 @@ jQuery(function ($) {
 
         data: {
             page: '',
+            showPins: false,
             tagOptions: [
                 {value: 'watch', text: 'Watch', cls: 'success', icon: 'eye'},
                 {value: 'solved', text: 'Solved', cls: 'success', icon: 'check'},
@@ -38,14 +42,16 @@ jQuery(function ($) {
                 {value: 'feature', text: 'Feature request', cls: 'primary', icon: 'bolt'}
             ],
             question: {tags: []},
+            pins: {},
             questions: {},
             filters: {
                 showAccepted: false,
                 tags: []
             },
+            bottomTemplate: '<div class="uk-position-absolute uk-position-bottom-right">\n    <ul class="uk-subnav uk-subnav-line uk-margin-right uk-text-small">\n        {{newMessages}}\n        {{user}}\n        <li><span>Created: {{created}}</span></li>\n    </ul>\n    \n</div>',
             tagTemplate: '<span class="uk-badge uk-badge-{{cls}}" data-uk-tooltip="{delay: 200}" title="{{text}}"><i class="uk-icon-{{icon}} uk-icon-justify"></i></span>\n',
             tagOptionTemplate: '<li class="uk-dropdown-close"><a href="#" data-addtag="{{value}}"><i class="uk-icon-{{icon}} uk-text-{{cls}} uk-margin-small-right"></i>{{text}}</a></li>\n',
-            topTemplate: '<div class="uk-margin-small-top uk-flex uk-flex-space-around"> \n    <a href="#" class="uk-icon-hover uk-icon-thumb-tack" data-pinquestion></a>\n    <div class="uk-position-relative" data-uk-dropdown="{delay: 100}">\n        <i class="uk-icon-tags"></i>\n        <div class="uk-dropdown uk-text-left">\n            <ul class="uk-nav uk-nav-dropdown">\n                {{tagOptions}}\n            </ul>\n        </div> \n    </div>\n</div>\n{{tags}}<br/>\n<small>{{user}}</small>\n'
+            topTemplate: '<div class="uk-margin-small-top uk-flex uk-flex-space-around"> \n    <a href="#" class="uk-icon-thumb-tack {{pinnedClass}}" data-pinquestion></a>\n    <div class="uk-position-relative" data-uk-dropdown="{delay: 100}">\n        <i class="uk-icon-tags"></i>\n        <div class="uk-dropdown uk-text-left">\n            <ul class="uk-nav uk-nav-dropdown">\n                {{tagOptions}}\n            </ul>\n        </div> \n    </div>\n</div>\n{{tags}}<br/>\n<small>{{user}}</small>\n'
         },
 
         created: function () {
@@ -57,6 +63,8 @@ jQuery(function ($) {
             }.bind(this));
             //merge from localstorage filters
             this.filters = UIkit.$.extend(true, this.filters, JSON.parse((this.$localstorage('default.filters') || '{}')));
+            this.showPins = this.$localstorage('showPins') || false;
+            this.pins = this.$getPins();
         },
 
         ready: function () {
@@ -116,11 +124,25 @@ jQuery(function ($) {
                 } else {
                     this.questions[id].tags.splice(idx, 1);
                 }
-                this.$saveQuestion(this.questions[id], this);
+                this.$saveQuestion(this.questions[id]);
                 this.questions[id].decorateDefault(UIkit.$('[data-id="' + this.questions[id].selector + '"]'), this);
             },
             pinQuestion: function (id) {
-                console.log(this.questions[id].title);
+                var pinned;
+                if (this.pins[id]) {
+                    this.$deletePin(id);
+                    this.pins.$delete(id);
+                    pinned = false;
+                } else {
+                    this.pins.$set(id, this.$getPin(id));
+                    pinned = true;
+                }
+                if (this.questions[id]) {
+                    this.questions[id].pinned = pinned;
+                } else {
+                    this.question.pinned = pinned;
+                }
+                this.$saveQuestion(this.questions[id]);
             },
             getTag: function (tag) {
                 return (_.find(this.tagOptions, 'value', tag) || {value: '', text: 'Not found', cls: '', icon: 'exclamation'});
@@ -135,21 +157,28 @@ jQuery(function ($) {
                     this.filterQuestions();
                 },
                 deep: true
+            },
+            showPins: function (value) {
+                this.$localstorage('showPins', value ? 1 : 0);
             }
         },
 
         filters: {
             datetime: function (date) {
+                return this.$questionDateformat(date);
+            },
+            dateshort: function (date) {
                 if (date) {
                     var d = new Date(date);
-                    return d.toLocaleDateString() + ', ' + d.toLocaleTimeString();
+                    return d.getDate() + '-' + (d.getMonth() + 1);
                 }
-                return 'No date';
+                return '';
             }
         },
 
         components: {
             'toolbar': require('./components/toolbar.vue'),
+            'pinbar': require('./components/pinbar.vue'),
             'instorage': require('./components/instorage.vue'),
             'question-tags': require('./components/question-tags.vue'),
             'tags': require('./components/tags.vue')

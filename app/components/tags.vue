@@ -26,7 +26,7 @@
 
         created: function () {
             this.label =  this.page === 'question' ? 'Toggle' : 'Filter';
-            this.ttipText =  this.page === 'question' ? 'Hide/show' : 'Toggle tag';
+            this.ttipText =  this.page === 'question' ? 'Toggle tag' : 'Hide/show';
         },
 
         calculated: {

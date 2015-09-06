@@ -77,6 +77,7 @@
                         <a v-attr="href: question.url" class="uk-h4">{{ question.title }}</a><br/>
                         <p class="uk-text-truncate">{{ question.description }}</p>
                         <ul class="uk-margin-top-small uk-subnav uk-subnav-line uk-text-small uk-flex-center">
+                            <li v-if="question.pinned"><span><i class="uk-icon-thumb-tack uk-icon-justify"></i></span></li>
                             <li v-if="question.favorite"><span><i class="uk-icon-star uk-text-primary uk-icon-justify"></i></span></li>
                             <li v-if="question.accepted"><span><i class="uk-icon-check uk-text-success uk-icon-justify"></i></span></li>
                             <li><span>A: <strong>{{ (question.answers) }}</strong></span></li>
