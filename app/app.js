@@ -15,7 +15,7 @@ jQuery(function ($) {
     $('body').prepend('<toolbar></toolbar>')
         .prepend('<pinbar></pinbar>')
         //.prepend('<pre>{{ $data.pins | json }}</pre>')
-        .append('<instorage></instorage>');
+        .append('<instorage v-ref="instorage"></instorage>');
 
     if (page === 'question') {
         $('[data-question] .info').append('<question-tags question="{{@ question }}"></question-tags>');
@@ -86,6 +86,10 @@ jQuery(function ($) {
             default:
                 break;
             }
+            //only load when needed
+            UIkit.$('#instorage-modal').on('show.uk.modal', function () {
+                this.$.instorage.load();
+            }.bind(this));
 
         },
 
@@ -127,9 +131,9 @@ jQuery(function ($) {
                 this.$saveQuestion(this.questions[id]);
                 this.questions[id].decorateDefault(UIkit.$('[data-id="' + this.questions[id].selector + '"]'), this);
             },
-            pinQuestion: function (id) {
+            pinQuestion: function (id, overwrite) {
                 var pinned;
-                if (this.pins[id]) {
+                if (this.pins[id] && !overwrite) {
                     this.$deletePin(id);
                     this.pins.$delete(id);
                     pinned = false;
@@ -139,10 +143,11 @@ jQuery(function ($) {
                 }
                 if (this.questions[id]) {
                     this.questions[id].pinned = pinned;
+                    this.$saveQuestion(this.questions[id]);
                 } else {
                     this.question.pinned = pinned;
+                    this.$saveQuestion(this.question);
                 }
-                this.$saveQuestion(this.questions[id]);
             },
             getTag: function (tag) {
                 return (_.find(this.tagOptions, 'value', tag) || {value: '', text: 'Not found', cls: '', icon: 'exclamation'});

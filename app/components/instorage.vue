@@ -18,6 +18,16 @@
                                 </ul>
                             </div>
                         </div>
+                        <button class="uk-button uk-button-small"
+                                v-show="!exportLink" v-on="click: export"
+                                data-uk-tooltip="{delay:500, pos: 'bottom'}" title="Export">
+                            <i class="uk-icon-upload"></i>
+                        </button>
+                        <a v-attr="href: exportLink" class="uk-button uk-button-small uk-button-success" download="export.json"
+                           v-show="exportLink"><i class="uk-icon-download uk-margin-small-right"></i>Download</a>
+                        <button class="uk-button uk-button-small" v-on="click: showImport = !showImport"
+                                data-uk-tooltip="{delay:500, pos: 'bottom'}" title="Import">
+                            <i class="uk-icon-download"></i></button>
                         <button class="uk-button uk-button-small" v-on="click: load"
                                 data-uk-tooltip="{delay:500, pos: 'bottom'}" title="Reload">
                             <i class="uk-icon-refresh"></i></button>
@@ -40,7 +50,14 @@
                         </select>
                     </div>
                 </div>
-                <div class="uk-margin-small-top uk-flex uk-flex-middle uk-flex-space-between">
+                <div v-show="showImport" class="uk-margin-top uk-margin-bottom uk-flex uk-flex-middle uk-flex-space-between">
+                    <div class="uk-flex-item-1 uk-margin-small-right">
+                        <textarea class="uk-width-1-1" v-model="importString" rows="3"></textarea>
+                    </div>
+                    <div><button class="uk-button uk-button-success" v-on="click: import">
+                        <i class="uk-icon-download uk-margin-small-right"></i>Import</button></div>
+                </div>
+                <div class="uk-margin-small-top uk-flex uk-flex-bottom uk-flex-space-between">
                     <div>
                         <tags selected="{{@ filters.tags }}" tag-options="{{ $parent.tagOptions }}" page="instorage"></tags>
                     </div>
@@ -117,7 +134,10 @@
         data: function () {
             return {
                 filters: {},
-                instorage: []
+                instorage: [],
+                exportLink: false,
+                showImport: false,
+                importString: ''
             };
         },
 
@@ -128,7 +148,6 @@
         },
 
         ready: function () {
-            this.load()
         },
 
         watch: {
@@ -183,6 +202,36 @@
                     }
                 }.bind(this));
             },
+            export: function () {
+                var $url = window.URL || window.webkitURL;
+                this.exportLink = $url.createObjectURL(new Blob([JSON.stringify(this.$localstorage(), null, "\t")], {type: "application/force-download"}));
+            },
+            import: function () {
+                var vm = this, data;
+                if (this.importString) {
+                    try {
+                        data = JSON.parse(this.importString);
+                        _.forIn(data, function (value, key) {
+                            switch (key) {
+                            case 'pins':
+                                var pins = JSON.parse(value);
+                                _.forIn(pins, function (pindata) {
+                                    vm.$savePin(pindata);
+                                });
+                                break;
+                            default:
+                                if (key.substr(0, 2) === 'q.') {
+                                    vm.$localstorage(key, value);
+                                }
+                                break;
+                            }
+
+                        });
+                    } catch (e) {
+                        UIkit.notify('Data no valid JSON!', 'danger');
+                    }
+                }
+            },
             showAll: function () {
                 this.$set('filters', _.assign({}, this.$options.defaultFilters));
             },
@@ -197,7 +246,7 @@
                         this.$localstorage.remove('q.' + question.id)
                     }
                 }.bind(this));
-                UIkit.notify('Localstorage purged', 'success')
+                UIkit.notify('Localstorage purged', 'success');
                 this.instorage = [];
                 this.load()
             }
